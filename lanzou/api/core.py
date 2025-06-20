@@ -479,11 +479,14 @@ class LanZouCloud(object):
                 if len(pwd) == 0:
                     return FileDetail(LanZouCloud.LACK_PASSWORD, pwd=pwd, url=share_url)  # 没给提取码直接退出
                 # data : 'action=downprocess&sign=AGZRbwEwU2IEDQU6BDRUaFc8DzxfMlRjCjTPlVkWzFSYFY7ATpWYw_c_c&p='+pwd,
-                sign = re.search(r"sign=(\w+?)&", first_page).group(1)
-                post_data = {'action': 'downprocess', 'sign': sign, 'p': pwd}
-                link_info = self._post(self._host_url + '/ajaxm.php', post_data)  # 保存了重定向前的链接信息和文件名
+                sign_match = re.search(r"'sign':'([^']*)_c_c'", first_page)
+                sign = sign_match.group(1) + '_c_c'
+                post_data = {'action': 'downprocess', 'sign': sign, 'p': pwd, 'kd': 1}
+                ajax_match = re.search(r"file=([^']*)'", first_page)
+                link_info = self._post(self._host_url + '/ajaxm.php?file=' + ajax_match.group(1), post_data)  # 保存了重定向前的链接信息和文件名
                 second_page = self._get(share_url)  # 再次请求文件分享页面，可以看见文件名，时间，大小等信息(第二页)
                 if not link_info or not second_page.text:
+                    print('not info')
                     return FileDetail(LanZouCloud.NETWORK_ERROR, pwd=pwd, url=share_url)
                 link_info = link_info.json()
                 second_page = remove_notes(second_page.text)
@@ -519,9 +522,9 @@ class LanZouCloud(object):
                                       pwd=pwd, url=share_url)
                 first_page = remove_notes(first_page.text)
                 # 一般情况 sign 的值就在 data 里，有时放在变量后面
-                sign = re.search(r"'sign':(.+?),", first_page).group(1)
+                sign = re.search(r"'sign':'([^']*)'", first_page).group(1)
                 if len(sign) < 20:  # 此时 sign 保存在变量里面, 变量名是 sign 匹配的字符
-                    sign = re.search(rf"var {sign}\s*=\s*'(.+?)';", first_page).group(1)
+                    sign = re.search(r"'sign':'([^']*)'", first_page).group(1)
                 post_data = {'action': 'downprocess', 'sign': sign, 'ves': 1}
                 # 某些特殊情况 share_url 会出现 webpage 参数, post_data 需要更多参数
                 # https://github.com/zaxtyson/LanZouCloud-API/issues/74
@@ -534,6 +537,7 @@ class LanZouCloud(object):
                                  'websign': web_sign, 'websignkey': web_sign_key}
                 link_info = self._post(self._host_url + '/ajaxm.php', post_data)
                 if not link_info:
+
                     return FileDetail(LanZouCloud.NETWORK_ERROR, name=f_name, time=f_time, size=f_size, desc=f_desc,
                                       pwd=pwd, url=share_url)
                 link_info = link_info.json()

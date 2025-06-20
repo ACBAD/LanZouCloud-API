@@ -70,7 +70,7 @@ def is_name_valid(filename: str) -> bool:
         'ttc', 'z', 'w3x', 'xlsx', 'cetrainer', 'ct', 'rar', 'mp3', 'pptx', 'mobileconfig', 'epub',
         'imazingapp', 'doc', 'iso', 'img', 'appimage', '7z', 'rplib', 'lolgezi', 'exe', 'azw3', 'zip',
         'conf', 'tar', 'dll', 'flac', 'xpa', 'lua', 'cad', 'hwt', 'accdb', 'ce',
-        'xmind', 'enc', 'bds', 'bdi', 'ssf', 'it', 'gz'
+        'xmind', 'enc', 'bds', 'bdi', 'ssf', 'it', 'gz', 'png', 'jpg'
     )
 
     return filename.split('.')[-1].lower() in valid_suffix_list
